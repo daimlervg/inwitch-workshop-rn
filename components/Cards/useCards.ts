@@ -11,7 +11,7 @@ interface ICards {
 	totalCount: number
 }
 
-export default function useGetCards(entityId: string) {
+export default function useGetCards(entityId: string, status: string) {
 	const [cards, setCards] = useState<ICards>({
 		cards: [],
 		totalCount: 0
@@ -19,7 +19,7 @@ export default function useGetCards(entityId: string) {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState();
 
-	const getCards = async () => {
+	const getCards = async (status: string) => {
 		setLoading(true);
 		try {
 			const token = await getAccessToken();
@@ -27,13 +27,19 @@ export default function useGetCards(entityId: string) {
 			const headers = {
 				"X-User-Bearer": `Bearer ${token}`,
 			}
+			const params :any = {
+				paymentMethodReference: entityId
+			}
+
+			if(status && cardStatus.includes(status as typeof cardStatus[number])){
+				params["status"] = status
+			};
+			
 			const cardsRequest = await axiosInstance({
 				method: "GET",
 				url,
 				headers,
-				params: {
-					paymentMethodReference: entityId
-				}
+				params: params
 			});
 			setCards(cardsRequest.data);
 		} catch (err: any) {
@@ -44,8 +50,8 @@ export default function useGetCards(entityId: string) {
 	};
 
 	useEffect(() => {
-		getCards();
-	}, []);
+		getCards(status);
+	}, [status]);
 
 	return {
 		cards,
